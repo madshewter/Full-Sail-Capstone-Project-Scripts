@@ -1,0 +1,46 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class CheckpointManager : MonoBehaviour // script for managing checkpoints in the scene
+{
+    
+    public GameObject player;
+    private DeadZoneMoving dzm;
+    public Vector3 cp;
+    public Transform target;
+    public Transform camTransform;
+
+    void Start()
+    {
+        player = PlayerManager.Instance.playerRef;
+        target = player.transform;
+        cp = player.transform.position;
+        dzm = FindObjectOfType<DeadZoneMoving>();
+    }
+
+    private void Update()
+    {
+        player = PlayerManager.Instance.playerRef;
+    }
+
+    public void Respawn()
+    {
+        //reactivates all player movement
+        player.GetComponent<PlayerHealth>().notDead();
+
+        //clones the player & respawns it to most recent checkpoint, updates player reference in player manager
+        GameObject newPlayer = Instantiate(player, cp, transform.rotation);
+        PlayerManager.Instance.SetNewPlayer(newPlayer);
+        //Reset dead bool
+        //player.GetComponent<PlayerHealth>().isPlayerDead = false;
+        if (dzm != null)
+        {
+            dzm.SetZonePosition(dzm.checkpointPosition);
+        }
+
+        //Destroys the player's dead body
+        Destroy(player);
+    }
+}
