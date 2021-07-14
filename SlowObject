@@ -1,0 +1,119 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class SlowObject_MAS : MonoBehaviour  // script for slowing down specfic objects in the scene by colliding with a trigger
+{
+    [SerializeField] GameObject objectToSlow; // game object called is the object that will be slowed
+    [SerializeField] private Animator objectAnimation; // animator for the game object
+    public float delayTime; // set time for the object to be delayed
+
+    [SerializeField] AudioSource slowTime; // sfx for the slow time trigger
+
+    public float timeRemaining; // keeps track of how much time is left for the objects to be slowed
+
+    bool isSlowed; // checks to see if the object is slowed
+    bool isActive; // checks to see if the feature is active
+
+    public Text timeText; // text for the countdown
+    public GameObject slowTimeUI; // UI object image
+    public GameObject player; // this is the player
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        objectAnimation = objectToSlow.GetComponent<Animator>(); // on start finds the animator for the game object
+        objectAnimation.speed = 2; // sets the speed to 2 which is the normal speed
+
+        isSlowed = false; // object isn't slowed off start
+        isActive = false; // ability isn't active off start
+
+        timeRemaining = delayTime; // the time remaining is mirrored to how many seconds is left on the ability
+
+        if (player == null) // if the player object isn't assigned in the inspector
+        {
+            player = GameObject.FindGameObjectWithTag("Player"); // find the object with the player tag
+        }
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (isSlowed) // if the object is currently slowed
+        {
+            ObjectIsSlowed(); // start this method
+        }
+
+        if (player == null) 
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+        }
+    }
+
+    private void OnTriggerEnter(Collider other) // trigger for the slow time trigger
+    {
+        if (other.tag == "Player") 
+        {
+            if (isActive == false) // if the ability is currently not playing
+            {
+                PlaySound(); // call sfx method
+
+                objectAnimation.speed = 0.3f; // set the objects speed to 0.3
+ 
+                isSlowed = true; // object is now in the slowed state
+                isActive = true; // ability is now active
+            }
+        }
+    }
+
+    private void OnTriggerExit(Collider other) // when the player exits
+    {
+        if (other.tag == "Player")
+        {
+            StartCoroutine(DelayObjectSpeed()); // starts coroutine
+        }
+    }
+
+    IEnumerator DelayObjectSpeed() // coroutine for the delay between objects being slowed to objects at normal speed
+    {
+        yield return new WaitForSeconds(delayTime); // time/speed is set in inspector
+
+        isActive = false; // after the time runs out, set the bool to inactive
+
+        objectAnimation.speed = 2; // changes the speed back to the normal speed
+    }
+
+    public void ObjectIsSlowed() // method for what happens when the object is slowed
+    {
+        if (player.GetComponent<PlayerHealth>().isPlayerDead == false) // finds bool from the script PlayerHealth and checks to see if the player is alive or dead
+        {
+            if (timeRemaining >= 0) // if the time remaining is equal to or greater than 0
+            {
+                timeRemaining -= Time.deltaTime; // time begins to countdown in the Engine
+                slowTimeUI.SetActive(true); // enabled the UI on the player's screen
+                timeText.text = (timeRemaining).ToString("0"); // countdown goes down to 0 then disappears afterwards
+            }
+            else // if anything else happens
+            {
+                slowTimeUI.SetActive(false); // UI gets disabled
+                isSlowed = false; // object isn't slowed
+                timeRemaining = delayTime; // time resets
+            }
+        }
+        if (player.GetComponent<PlayerHealth>().isPlayerDead == true) // if the bool in the PlayerHealth script is true
+        {
+            slowTimeUI.SetActive(false); // disable the UI on the player's screen
+            isSlowed = false; // object isn't slowed anymore and gets reset
+            timeRemaining = delayTime; // time resets
+        }
+    }
+
+    void PlaySound() // method for the sfx
+    {
+        if (isActive == false)
+        {
+            slowTime.Play();
+        }
+    }
+}
