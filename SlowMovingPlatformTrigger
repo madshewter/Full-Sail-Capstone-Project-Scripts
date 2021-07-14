@@ -1,0 +1,68 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SlowMovingPlatformTrigger_MAS : MonoBehaviour
+{
+    public GameObject[] movingPlatforms; // array of the game objects that are the moving platforms
+    public float delayTime; // time that the platforms are slowed
+    public float objectSpeed; // speed of the platforms
+    public AudioSource slowTime; // sfx for slow time trigger
+
+    public float slowedSpeed; // speed of platform while slowed
+
+    public bool isActive; // checks if the slow time effect is activated
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        movingPlatforms = GameObject.FindGameObjectsWithTag("Dynamic"); // finds all game objects that have the tag Dynamic
+        isActive = false; // off start slow time is disabled
+    }
+
+    void PlaySound() // method to activate the slow time sfx
+    {
+        if (isActive == false)
+        {
+            slowTime.Play(); // if the slow time effect isn't already running, play sound
+        }
+    }
+
+    private void OnTriggerEnter(Collider other) // method for when the player walks into the sphere collider
+    {
+        if (other.tag == "Player")
+        {
+            if (isActive == false) 
+            {
+                foreach (GameObject dynamic in movingPlatforms) // finds and grabs each game object that are dynamic and names them movingPlatforms in the array
+                {
+                    dynamic.GetComponent<MovingPlatform>().speed = slowedSpeed; // sets the speed of the platforms to the speed set in the inspector
+                }
+                PlaySound();
+
+                isActive = true; // sets slow time effect to enabled
+            }
+        }
+    }
+
+    private void OnTriggerExit(Collider other) // method for when the player leaves the sphere collider
+    {
+        if (other.tag == "Player")
+        {
+            foreach (GameObject dynamic in movingPlatforms) 
+            {
+                StartCoroutine(DelayObjectSpeed()); // starts the coroutine when the player exits the collider
+            }
+        }
+    }
+
+    IEnumerator DelayObjectSpeed() // coroutine to begin delaying the platforms
+    {
+        yield return new WaitForSeconds(delayTime); // wait for how ever many seconds that have been set in the inspector
+        isActive = false; // sets the slow time to disabled after x amount of time
+        foreach (GameObject dynamic in movingPlatforms)
+        {
+            dynamic.GetComponent<MovingPlatform>().speed = objectSpeed; // all dynamic objects with the Dynamic Tag's speed will be changed to the normal object speed that is set in the inspector
+        }
+    }
+}
