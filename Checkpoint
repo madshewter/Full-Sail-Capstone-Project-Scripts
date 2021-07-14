@@ -1,0 +1,48 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Checkpoint : MonoBehaviour // script for checkpoints in the scene
+{
+    public GameObject checkpoint;
+    public Vector3 checkPointDZ;
+    private DeadZoneMoving dzm;
+    private CheckpointManager thisCheckpoint;
+
+    private void Start()
+    {
+        checkpoint.SetActive(false);
+        dzm = FindObjectOfType<DeadZoneMoving>();
+
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Player")
+        {
+            //thisCheckpoint.PlayerThroughCheckpoint(this);
+
+            FindObjectOfType<CheckpointManager>().cp = transform.position;
+            if (dzm != null)
+            {
+                checkPointDZ = dzm.transform.position;
+            }
+
+           GameManager.Instance.SaveGame();
+           checkpoint.SetActive(true);
+           StartCoroutine(FadeText());
+        }
+    }
+
+    public void SetCheckpoints(CheckpointManager thisCheckpoint)
+    {
+        this.thisCheckpoint = thisCheckpoint;
+
+    }
+
+    IEnumerator FadeText()
+    {
+        yield return new WaitForSeconds(1f);
+
+        checkpoint.SetActive(false);
+    }
+}
