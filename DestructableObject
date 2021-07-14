@@ -1,0 +1,16 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class DestructableObject_MAS : MonoBehaviour // script for destroying objects
+{
+    public GameObject destroyedVersion; // game object prefab set in inspector
+    public bool isDestroyed = false; // if the object isn't currently destroyed
+
+    public void OnMouseDown() // when the mouse button is clicked
+    {
+        isDestroyed = true; // object is set to destroyed state
+        Instantiate(destroyedVersion, transform.position, transform.rotation); // spawns the destroyed game object to the current position and correct rotation
+        Destroy(gameObject, .1f); // destroy the game object that this script is attached to in .1 seconds 
+    }
+}
