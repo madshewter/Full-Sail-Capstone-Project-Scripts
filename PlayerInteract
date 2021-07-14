@@ -1,0 +1,41 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerInteract_MAS : MonoBehaviour // script for interacting with objects
+{
+    public GameObject doorObject; // the game object called in the inspector
+    bool isPlayer; // checks for player
+    bool isTriggered; // checks for trigger
+    private Animator doorAnimation; // animation for door/object
+    [SerializeField] private AudioClip interactSound; // sfx for the interaction
+    [SerializeField] private AudioSource interactAudio; 
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        doorAnimation = doorObject.GetComponent<Animator>(); // sets the animator to the door object
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.E) && isPlayer) // if the E key has been pressed & this is the player
+        {
+            if (doorAnimation.GetBool("open") == false) // if the door is closed
+            {
+                doorAnimation.SetBool("open", true); // open the door
+                interactAudio.clip = interactSound; 
+                interactAudio.Play(); // play the sfx
+            }
+        }
+    }
+
+    private void OnTriggerEnter(Collider other) // trigger for the button
+    {
+        if (other.tag == "Player") // if the player is inside of the trigger
+        {
+            isPlayer = true; // sets the bool to true
+            isTriggered = true; // tells the script that the player has entered the trigger
+        }
+    }
